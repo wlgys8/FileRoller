@@ -1,0 +1,8 @@
+{
+	"name":"com.ms.fileroller",
+	"display":"FileRoller",
+	"version":"0.0.1",
+	"description":"FileRoller",
+	"dependencies": {
+	}
+}
