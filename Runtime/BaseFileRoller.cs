@@ -57,7 +57,6 @@ namespace MS.FileRoller{
             fileMatches.Sort((f1,f2)=>{
                 return CompareFile(f1.fileInfo,f2.fileInfo);
             });
-            UnityEngine.Debug.Log($"{this} roll {fileMatches.Count}");
             //delete files until rest count is <options.maxNumOfBackups>
             while(fileMatches.Count > maxNumOfBackups){
                 var lastFile = fileMatches[fileMatches.Count - 1];
@@ -75,7 +74,6 @@ namespace MS.FileRoller{
                 var path = fileMatchInfo.path;
                 pathChain.Add(path);
                 var rollToPath = ResolveRollName(fileMatchInfo.fileInfo);
-                UnityEngine.Debug.Log($"{path} => {rollToPath}");
                 if(rollToPath == null){
                     break;
                 }
