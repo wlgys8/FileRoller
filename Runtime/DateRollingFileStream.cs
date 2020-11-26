@@ -7,36 +7,60 @@ namespace MS.FileRoller{
     public class DateRollingFileStream:BaseRollingFileStream
     {
 
+        public const int DEFAULT_MAX_BACKUPS = 3;
+        public const int MIN_BACKUPS = 1;
+
+        public const int DEFAULT_MAX_FILE_SIZE = 1024 * 1024;
+        public const int MIN_FILE_SIZE = 10 * 1024;
+
+        public const bool DEFAULT_KEEP_EXT = true;
+
+
         public class Options{
-            public int maxBackups = 3;
-            public int maxFileSize = 1024 * 10;
-            public bool keepExts = false;
+            public int maxBackups = DEFAULT_MAX_BACKUPS;
+            public int maxFileSize = DEFAULT_MAX_FILE_SIZE;
+            public bool keepExt = DEFAULT_KEEP_EXT;
         }
 
         private int _maxBackups;
         private int _maxFileSize;
 
-        private bool _keepExts;
+        private bool _keepExt;
 
-        private System.DateTime _writingDate;
+        private System.DateTime _creationTime;
 
         public DateRollingFileStream(string filePath,Options options):base(filePath){
-            _maxBackups = Mathf.Max(1,options.maxBackups);
-            _maxFileSize = Mathf.Max(1024 * 10,options.maxFileSize);
-            _keepExts = options.keepExts;
+            _maxBackups = Mathf.Max(MIN_BACKUPS,options.maxBackups);
+            _maxFileSize = Mathf.Max(MIN_FILE_SIZE,options.maxFileSize);
+            _keepExt = options.keepExt;
         }
 
+        protected override void BeforeFileStreamCreate()
+        {
+            base.BeforeFileStreamCreate();
+            var today = System.DateTime.Now.Date;
+            if(File.Exists(path)){
+                _creationTime = File.GetCreationTime(path);
+                if(_creationTime.Date != today){
+                    new DatedFileRoller(dir,fileName,_keepExt,_maxBackups).Roll();
+                }
+            }
+        }
 
         protected override void OnFileStreamCreated()
         {
             base.OnFileStreamCreated();
-            _writingDate = System.DateTime.Now.Date;
+            if(File.Exists(path)){
+                _creationTime = File.GetCreationTime(path);
+            }else{
+                _creationTime = System.DateTime.Now;
+            }
         }
 
         protected override bool ShouldRoll()
         {
              var date = System.DateTime.Now.Date;
-             if(_writingDate != date){
+             if(_creationTime.Date != date){
                  //date changed
                  return true;
              }
@@ -49,35 +73,8 @@ namespace MS.FileRoller{
 
         protected override void StartRoll()
         {
-            var date = System.DateTime.Now.Date;
-            var dateStr = date.ToString("yyyyMMdd");
-            var datedFiles = FileRollUtil.GetDatedBackupFiles(dir,fileName,_keepExts);
-            while(datedFiles.Count >= _maxBackups){
-                var oldest = datedFiles[datedFiles.Count - 1];
-                datedFiles.RemoveAt(datedFiles.Count - 1);
-                File.Delete(oldest.path);
-            }
-            var todayFileCount = CountOfFilesToday(datedFiles);
-
-            var todayFileName = FileRollUtil.GetDatedFileName(fileName,date,0,_keepExts);
-            FileRollUtil.RollFiles(dir,todayFileName,todayFileCount + 1,_keepExts);
-            if(File.Exists(path)){
-                File.Move(path,Path.Combine(dir,todayFileName));
-            }
+            new DatedFileRoller(dir,fileName,_keepExt,_maxBackups).Roll();
         }
-
-        private int CountOfFilesToday(List<DatedFileInfo> fileInfos){
-            var date = System.DateTime.Now.Date;
-            int count = 0;
-            foreach(var f in fileInfos){
-                if(f.date == date){
-                    count ++;
-                }
-            }
-            return count;
-        }
-
-
     }
 
 }

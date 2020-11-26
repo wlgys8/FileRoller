@@ -42,6 +42,7 @@ namespace MS.FileRoller{
                 if(!Directory.Exists(_dir)){
                     Directory.CreateDirectory(_dir);
                 }
+                BeforeFileStreamCreate();
                 _fileStream = new FileStream(this._filePath,FileMode.Append);
                 OnFileStreamCreated();
             }
@@ -96,7 +97,10 @@ namespace MS.FileRoller{
 
         protected abstract void StartRoll();
 
+        protected virtual void BeforeFileStreamCreate(){}
+
         protected virtual void OnFileStreamCreated(){}
+        
         protected virtual void OnFileStreamClosed(){}
         
 
