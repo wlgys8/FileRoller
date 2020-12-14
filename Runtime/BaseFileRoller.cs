@@ -14,9 +14,9 @@ namespace MS.FileRoller{
 
         }
 
-        public int maxNumOfBackups;
-        public string dir;
-        public string fileNamePattern;
+        public readonly int maxNumOfBackups;
+        public readonly string dir;
+        public readonly string fileNamePattern;
 
         public BaseFileRoller(string dir,string fileNamePattern,int maxNumOfBackups){
             this.dir = dir;
@@ -29,9 +29,6 @@ namespace MS.FileRoller{
         protected abstract TFileInfo ExtractFileInfo(Match match);
 
         private List<FileMatchResult> ListFiles(){
-            if(!Directory.Exists(dir)){
-                throw new System.IO.DirectoryNotFoundException($"dir not found: {dir}");
-            }
             var regex = new Regex(fileNamePattern);
             var list = Directory.GetFiles(dir).Select((filePath)=>{
                 string fileName = Path.GetFileName(filePath);
@@ -50,8 +47,15 @@ namespace MS.FileRoller{
             return list;
         }
 
+        private void EnsureDir(){
+            if(!Directory.Exists(dir)){
+                Directory.CreateDirectory(dir);
+            }
+        }
+
 
         public void Roll(){
+            EnsureDir();
             var fileMatches =  ListFiles();
             //after sort, newer file, fronter
             fileMatches.Sort((f1,f2)=>{
