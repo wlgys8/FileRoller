@@ -45,6 +45,10 @@ namespace MS.FileRoller{
 
         protected override void StartRoll()
         {
+            if(!isFileExists){
+                //if there's no file exists, no need to roll
+                return;
+            }
             new IndexedFileRoller(dir,fileName,_keepExts,_maxBackups).Roll();
         }
 

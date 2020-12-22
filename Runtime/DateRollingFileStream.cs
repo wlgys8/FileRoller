@@ -73,6 +73,9 @@ namespace MS.FileRoller{
 
         protected override void StartRoll()
         {
+            if(!this.isFileExists){
+                return;
+            }
             new DatedFileRoller(dir,fileName,_keepExt,_maxBackups).Roll();
         }
     }
