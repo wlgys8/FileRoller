@@ -37,6 +37,18 @@ namespace MS.FileRoller{
             }
         }
 
+        public bool isFileExists{
+            get{
+                return File.Exists(_filePath);
+            }
+        }
+
+        public bool isStreamOpened{
+            get{
+                return _fileStream != null;
+            }
+        }
+
         private FileStream EnsureFileStream(){
             if(_fileStream == null){
                 if(!Directory.Exists(_dir)){
